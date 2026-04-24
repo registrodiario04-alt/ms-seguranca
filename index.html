@@ -122,25 +122,66 @@
   .empty-state{text-align:center;padding:48px 20px;color:var(--muted);font-size:14px;border:1px dashed var(--border);border-radius:10px}
 
   /* ── HISTÓRICO ── */
-  .history-toolbar{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin-bottom:18px;display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
-  .filter-group{display:flex;flex-direction:column;gap:5px;flex:1;min-width:100px}
+  .hist-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+  .hist-header-left{display:flex;flex-direction:column;gap:2px}
+  .hist-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--text)}
+  .hist-subtitle{font-size:12px;color:var(--muted)}
+
+  /* Filtros */
+  .filter-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:16px;position:relative;overflow:hidden}
+  .filter-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#7eaaff)}
+  .filter-card-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+  .filter-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+  .filter-group{display:flex;flex-direction:column;gap:5px}
   .filter-label{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
-  .export-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-radius:10px}
-  .export-label{font-size:12px;color:var(--muted);flex:1}
-  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;overflow-x:auto}
+  .filter-group input,.filter-group select{font-size:13px;min-width:0}
+  .filter-actions{display:flex;gap:8px;align-items:flex-end;margin-left:auto}
+
+  /* Barra de ações / exportação */
+  .actions-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+  .actions-bar-left{display:flex;align-items:center;gap:8px}
+  .actions-bar-right{display:flex;gap:8px;flex-wrap:wrap}
+  .stats-chips{display:flex;gap:8px;flex-wrap:wrap}
+  .stat-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid}
+  .stat-chip.total{background:rgba(61,107,196,.1);color:var(--accent);border-color:rgba(61,107,196,.25)}
+  .stat-chip.inside{background:rgba(34,197,94,.1);color:var(--success);border-color:rgba(34,197,94,.25)}
+  .stat-chip.out{background:rgba(107,114,128,.1);color:var(--muted);border-color:var(--border)}
+  .stat-chip-num{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:700}
+
+  /* Botões de exportação */
+  .btn-export{display:inline-flex;align-items:center;gap:7px;border:none;border-radius:8px;color:#fff;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:700;padding:9px 16px;letter-spacing:.5px;transition:all .2s;position:relative;overflow:hidden}
+  .btn-export::before{content:'';position:absolute;inset:0;background:rgba(255,255,255,0);transition:.2s}
+  .btn-export:hover::before{background:rgba(255,255,255,.08)}
+  .btn-export:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.3)}
+  .btn-export.pdf{background:linear-gradient(135deg,#c0392b,#e74c3c)}
+  .btn-export.csv{background:linear-gradient(135deg,#1a7a4a,#27ae60)}
+  .btn-export.print{background:linear-gradient(135deg,#2a4fa0,var(--accent))}
+  .btn-export .export-icon{font-size:14px}
+  .btn-export .export-text{display:flex;flex-direction:column;line-height:1.1}
+  .btn-export .export-text small{font-size:10px;font-weight:400;opacity:.8}
+
+  /* Tabela */
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;overflow-x:auto}
   table{width:100%;border-collapse:collapse;font-size:13px;min-width:900px}
-  thead{background:var(--surface2);border-bottom:2px solid var(--accent)}
-  th{padding:12px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);white-space:nowrap}
-  td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+  thead{background:var(--surface2)}
+  thead tr{border-bottom:2px solid var(--accent)}
+  th{padding:11px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);white-space:nowrap}
+  th:first-child{padding-left:18px}
+  td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+  td:first-child{padding-left:18px}
   tr:last-child td{border-bottom:none}
-  tr:hover td{background:rgba(255,255,255,.02)}
-  tr.still-inside td{background:rgba(61,107,196,.05)}
-  tr.still-inside td:first-child{border-left:3px solid var(--accent)}
-  .status-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+  tr:hover td{background:rgba(255,255,255,.018)}
+  tr.still-inside td{background:rgba(61,107,196,.04)}
+  tr.still-inside td:first-child{border-left:3px solid var(--accent);padding-left:15px}
+  .status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;letter-spacing:.3px}
   .status-pill.inside{background:rgba(61,107,196,.15);color:var(--accent);border:1px solid rgba(61,107,196,.3)}
-  .status-pill.out{background:rgba(107,114,128,.15);color:var(--muted);border:1px solid var(--border)}
+  .status-pill.out{background:rgba(107,114,128,.1);color:var(--muted);border:1px solid var(--border)}
   .mono{font-family:'IBM Plex Mono',monospace;font-size:12px}
-  .print-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--surface2);border-top:1px solid var(--border)}
+
+  /* Rodapé da tabela */
+  .table-footer{display:flex;justify-content:space-between;align-items:center;padding:13px 18px;background:var(--surface2);border-top:1px solid var(--border);flex-wrap:wrap;gap:10px}
+  .table-footer-info{font-size:12px;color:var(--muted);display:flex;gap:18px}
+  .table-footer-info strong{color:var(--text)}
   .total-info{font-size:13px;color:var(--muted)}.total-info strong{color:var(--text)}
 
   /* ── MODAL EXPORT ── */
@@ -190,12 +231,28 @@
   .prefill-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
   @media print{
-    header,.history-toolbar,.export-toolbar,.print-bar .btn-primary,.btn-danger,.btn-success{display:none!important}
-    body{background:#fff;color:#000}
-    .table-wrap{border:1px solid #ccc}
-    thead{background:#f5f5f5}
-    th{color:#333}td{color:#111;border-bottom:1px solid #eee}
-    tr.still-inside td{background:#eff4ff}
+    header,.search-panel,.filter-card,.actions-bar,.table-footer,.btn-success,.btn-danger,.btn-primary,.nav-tabs,.clock{display:none!important}
+    body{background:#fff;color:#000;font-size:11px}
+    main{padding:0}
+    .view{display:block!important}
+    #view-cadastro,#view-monitor{display:none!important}
+    #view-historico{display:block!important}
+    .hist-header{margin-bottom:8px}
+    .hist-title{font-size:18px;color:#1a3a70}
+    .hist-subtitle{font-size:10px;color:#666}
+    .table-wrap{border:1px solid #ccc;border-radius:0}
+    thead{background:#1a3a70!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    th{color:#fff!important;font-size:8px;padding:6px 8px}
+    td{color:#111;border-bottom:1px solid #eee;font-size:9px;padding:5px 8px}
+    tr.still-inside td{background:#eff4ff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .status-pill{font-size:8px;padding:2px 6px;border:1px solid #ccc}
+    .status-pill.inside{background:#dbeafe!important;color:#1d4ed8!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .tbadge{font-size:7px;padding:1px 5px}
+    .table-footer{background:#f5f5f5!important;border-top:1px solid #ccc;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .table-footer-info{color:#444;font-size:9px}
+    .table-footer-info strong{color:#000}
+    /* Cabeçalho de impressão */
+    #view-historico::before{content:'M.S Segurança e Serviços — Relatório de Controle de Acesso';display:block;font-family:sans-serif;font-size:14px;font-weight:700;color:#1a3a70;border-bottom:2px solid #1a3a70;padding-bottom:6px;margin-bottom:12px}
   }
 </style>
 </head>
@@ -396,64 +453,102 @@
 
   <!-- ═══ HISTÓRICO ═══ -->
   <div class="view" id="view-historico">
-    <!-- Filtros -->
-    <div class="history-toolbar">
-      <div class="filter-group">
-        <span class="filter-label">Data</span>
-        <input type="date" id="f-data">
+
+    <!-- Cabeçalho da seção -->
+    <div class="hist-header">
+      <div class="hist-header-left">
+        <div class="hist-title">📋 Histórico de Acessos</div>
+        <div class="hist-subtitle">Consulte, filtre e exporte os registros de entrada e saída</div>
       </div>
-      <div class="filter-group" style="min-width:80px">
-        <span class="filter-label">Mês</span>
-        <select id="f-mes">
-          <option value="">Todos</option>
-          <option value="01">Jan</option><option value="02">Fev</option><option value="03">Mar</option>
-          <option value="04">Abr</option><option value="05">Mai</option><option value="06">Jun</option>
-          <option value="07">Jul</option><option value="08">Ago</option><option value="09">Set</option>
-          <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
-        </select>
-      </div>
-      <div class="filter-group" style="min-width:80px">
-        <span class="filter-label">Ano</span>
-        <select id="f-ano">
-          <option value="">Todos</option>
-          <option value="2025">2025</option><option value="2026" selected>2026</option>
-        </select>
-      </div>
-      <div class="filter-group" style="min-width:90px">
-        <span class="filter-label">Status</span>
-        <select id="f-status">
-          <option value="">Todos</option>
-          <option value="inside">Dentro</option>
-          <option value="out">Saiu</option>
-        </select>
-      </div>
-      <div class="filter-group" style="min-width:90px">
-        <span class="filter-label">Tipo</span>
-        <select id="f-tipo">
-          <option value="">Todos</option>
-          <option value="veiculo">🚗 Veículo</option>
-          <option value="colaborador">👷 Colaborador</option>
-          <option value="pedestre">🚶 Pedestre</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <span class="filter-label">Nome / Empresa / Placa</span>
-        <input type="text" id="f-busca" placeholder="Pesquisar...">
-      </div>
-      <button class="btn-primary" onclick="renderHistorico()">🔍 Buscar</button>
     </div>
 
-    <!-- Barra de Exportação -->
-    <div class="export-toolbar">
-      <span class="export-label">📤 Exportar relatório filtrado:</span>
-      <button class="btn-pdf" onclick="exportarPDF()">
-        📄 Exportar PDF
-      </button>
-      <button class="btn-csv" onclick="exportarCSV()">
-        📊 Exportar CSV
-      </button>
+    <!-- Card de Filtros -->
+    <div class="filter-card">
+      <div class="filter-card-title">⚙ Filtros de Pesquisa</div>
+      <div class="filter-row">
+        <div class="filter-group">
+          <span class="filter-label">Data Específica</span>
+          <input type="date" id="f-data" style="min-width:140px">
+        </div>
+        <div class="filter-group" style="min-width:80px">
+          <span class="filter-label">Mês</span>
+          <select id="f-mes">
+            <option value="">Todos</option>
+            <option value="01">Jan</option><option value="02">Fev</option><option value="03">Mar</option>
+            <option value="04">Abr</option><option value="05">Mai</option><option value="06">Jun</option>
+            <option value="07">Jul</option><option value="08">Ago</option><option value="09">Set</option>
+            <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
+          </select>
+        </div>
+        <div class="filter-group" style="min-width:80px">
+          <span class="filter-label">Ano</span>
+          <select id="f-ano">
+            <option value="">Todos</option>
+            <option value="2025">2025</option><option value="2026" selected>2026</option>
+          </select>
+        </div>
+        <div class="filter-group" style="min-width:100px">
+          <span class="filter-label">Status</span>
+          <select id="f-status">
+            <option value="">Todos</option>
+            <option value="inside">🟢 Dentro</option>
+            <option value="out">⚫ Saiu</option>
+          </select>
+        </div>
+        <div class="filter-group" style="min-width:110px">
+          <span class="filter-label">Tipo</span>
+          <select id="f-tipo">
+            <option value="">Todos</option>
+            <option value="veiculo">🚗 Veículo</option>
+            <option value="colaborador">👷 Colaborador</option>
+            <option value="pedestre">🚶 Pedestre</option>
+          </select>
+        </div>
+        <div class="filter-group" style="flex:1;min-width:180px">
+          <span class="filter-label">Nome / Empresa / Placa</span>
+          <input type="text" id="f-busca" placeholder="🔍  Pesquisar...">
+        </div>
+        <div class="filter-actions">
+          <button class="btn-primary" onclick="renderHistorico()" style="padding:10px 20px">🔍 Buscar</button>
+          <button class="btn-outline" onclick="limparFiltros()" style="padding:10px 14px;font-size:12px">↺ Limpar</button>
+        </div>
+      </div>
     </div>
 
+    <!-- Barra de ações: stats + exportação -->
+    <div class="actions-bar">
+      <div class="stats-chips">
+        <div class="stat-chip total">
+          <span class="stat-chip-num" id="total-count">0</span>
+          <span>registros</span>
+        </div>
+        <div class="stat-chip inside">
+          <span>●</span>
+          <span class="stat-chip-num" id="inside-count">0</span>
+          <span>dentro</span>
+        </div>
+        <div class="stat-chip out">
+          <span class="stat-chip-num" id="out-count">0</span>
+          <span>saíram</span>
+        </div>
+      </div>
+      <div class="actions-bar-right">
+        <button class="btn-export pdf" onclick="exportarPDF()" title="Exportar relatório em PDF">
+          <span class="export-icon">📄</span>
+          <span class="export-text">PDF<small>Relatório</small></span>
+        </button>
+        <button class="btn-export csv" onclick="exportarCSV()" title="Exportar planilha CSV">
+          <span class="export-icon">📊</span>
+          <span class="export-text">CSV<small>Planilha</small></span>
+        </button>
+        <button class="btn-export print" onclick="window.print()" title="Imprimir tabela">
+          <span class="export-icon">🖨️</span>
+          <span class="export-text">Imprimir<small>Tabela</small></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabela -->
     <div class="table-wrap">
       <table>
         <thead>
@@ -464,12 +559,19 @@
           </tr>
         </thead>
         <tbody id="history-body">
-          <tr><td colspan="15" style="text-align:center;padding:40px;color:var(--muted)">Clique em "Buscar" para carregar o histórico</td></tr>
+          <tr><td colspan="15" style="text-align:center;padding:48px;color:var(--muted)">
+            <div style="font-size:28px;margin-bottom:8px">📋</div>
+            <div style="font-size:14px;font-weight:500">Use os filtros acima e clique em "Buscar" para carregar os registros</div>
+          </td></tr>
         </tbody>
       </table>
-      <div class="print-bar">
-        <div class="total-info">Exibindo <strong id="total-count">0</strong> registros &nbsp;|&nbsp; Ainda dentro: <strong id="inside-count">0</strong></div>
-        <button class="btn-primary" onclick="window.print()">🖨️ Imprimir</button>
+      <div class="table-footer">
+        <div class="table-footer-info">
+          <span>Total: <strong id="footer-total">0</strong> registros</span>
+          <span>Dentro: <strong id="footer-inside" style="color:var(--accent)">0</strong></span>
+          <span>Saíram: <strong id="footer-out">0</strong></span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace" id="footer-timestamp"></div>
       </div>
     </div>
   </div>
@@ -915,10 +1017,19 @@ function renderHistorico() {
 
   function renderRows(list) {
     lastFilteredList=[...list];
+    const insideCount=list.filter(r=>!r.saida).length;
+    const outCount=list.filter(r=>r.saida).length;
+    // Stat chips
     document.getElementById('total-count').textContent=list.length;
-    document.getElementById('inside-count').textContent=list.filter(r=>!r.saida).length;
+    document.getElementById('inside-count').textContent=insideCount;
+    document.getElementById('out-count').textContent=outCount;
+    // Footer
+    document.getElementById('footer-total').textContent=list.length;
+    document.getElementById('footer-inside').textContent=insideCount;
+    document.getElementById('footer-out').textContent=outCount;
+    document.getElementById('footer-timestamp').textContent='Atualizado: '+new Date().toLocaleTimeString('pt-BR');
     const tbody=document.getElementById('history-body');
-    if(list.length===0){tbody.innerHTML=`<tr><td colspan="15" style="text-align:center;padding:40px;color:var(--muted)">Nenhum registro encontrado</td></tr>`;return;}
+    if(list.length===0){tbody.innerHTML=`<tr><td colspan="15" style="text-align:center;padding:48px;color:var(--muted)"><div style="font-size:28px;margin-bottom:8px">🔍</div><div style="font-size:14px;font-weight:500">Nenhum registro encontrado para os filtros selecionados</div></td></tr>`;return;}
     tbody.innerHTML=list.map(r=>{
       const inside=!r.saida; const tc=r.tipo||'pedestre';
       const actionHtml=inside
@@ -1054,6 +1165,16 @@ function showToast(msg,err=false) {
   const t=document.getElementById('toast');
   t.textContent=msg; t.className='toast'+(err?' error':'');
   t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+// ── Limpar Filtros ────────────────────────────────────────────────
+function limparFiltros() {
+  document.getElementById('f-data').value = new Date().toISOString().slice(0,10);
+  document.getElementById('f-mes').value = '';
+  document.getElementById('f-ano').value = '2026';
+  document.getElementById('f-status').value = '';
+  document.getElementById('f-tipo').value = '';
+  document.getElementById('f-busca').value = '';
 }
 
 // ── Init ──────────────────────────────────────────────────────────
