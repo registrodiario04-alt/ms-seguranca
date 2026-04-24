@@ -226,6 +226,42 @@
   .search-result-actions{display:flex;gap:8px;flex-shrink:0}
   .search-empty{text-align:center;padding:28px 16px;color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:8px}
   .search-loading{text-align:center;padding:18px;color:var(--muted);font-size:13px}
+
+  /* ── ALERTA: pessoa já dentro ── */
+  .search-result-item.ja-dentro{
+    border-color:var(--danger)!important;
+    background:rgba(239,68,68,.07)!important;
+    cursor:default!important;
+  }
+  .search-result-item.ja-dentro:hover{
+    border-color:var(--danger)!important;
+    background:rgba(239,68,68,.1)!important;
+  }
+  .search-result-item.ja-dentro::before{
+    background:var(--danger)!important;
+  }
+  .alert-dentro-banner{
+    display:flex;align-items:center;gap:10px;
+    margin-top:10px;padding:10px 14px;
+    background:rgba(239,68,68,.13);
+    border:1px solid rgba(239,68,68,.5);
+    border-radius:8px;
+    font-size:12px;font-weight:700;color:var(--danger);
+    animation:pulseRed 1.6s ease-in-out infinite;
+  }
+  @keyframes pulseRed{
+    0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}
+    50%{box-shadow:0 0 0 4px rgba(239,68,68,.2)}
+  }
+  .btn-bloqueado{
+    background:rgba(239,68,68,.15)!important;
+    border:1px solid rgba(239,68,68,.4)!important;
+    color:var(--danger)!important;
+    cursor:not-allowed!important;
+    font-size:12px;padding:7px 14px;
+    border-radius:6px;font-weight:700;
+    font-family:'IBM Plex Sans',sans-serif;
+  }
   .search-result-badge{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;background:rgba(61,107,196,.15);color:var(--accent);border:1px solid rgba(61,107,196,.3)}
   .prefill-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--accent);color:#fff;font-weight:700;font-size:13px;padding:12px 22px;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:998;opacity:0;transition:all .3s;white-space:nowrap}
   .prefill-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -727,12 +763,26 @@ async function executarBusca(query) {
       const isInside = !r.saida;
       const tipoLabel = { veiculo: '🚗 Veículo', colaborador: '👷 Colaborador', pedestre: '🚶 Pedestre' }[r.tipo] || r.tipo;
       const entradaFmt = r.entrada ? new Date(r.entrada).toLocaleDateString('pt-BR') : '—';
-      return `<div class="search-result-item ${isInside ? 'inside-badge' : ''}" onclick="preencherFormulario(${JSON.stringify(r).replace(/"/g, '&quot;')})">
-        <div>
+      const entradaHora = r.entrada ? new Date(r.entrada).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}) : '—';
+
+      // Calcula há quanto tempo está dentro
+      const permDentro = isInside ? calcPerm(r.entrada, null) : '';
+
+      const alertaBanner = isInside ? `
+        <div class="alert-dentro-banner">
+          🚨 ESTA PESSOA JÁ ESTÁ NO INTERIOR — entrada em ${entradaFmt} às ${entradaHora} (há ${permDentro}). Registre a SAÍDA antes de nova entrada.
+        </div>` : '';
+
+      const actionBtn = isInside
+        ? `<button class="btn-bloqueado" onclick="event.stopPropagation();mostrarAvisoDentro('${(r.nome||'').replace(/'/g,'\\'')}')" title="Não é possível dar entrada — pessoa já está dentro">🔒 Já está dentro</button>`
+        : `<button class="btn-primary" style="font-size:12px;padding:7px 14px;" onclick="event.stopPropagation();preencherFormulario(${JSON.stringify(r).replace(/"/g, '&quot;')})">↙ Usar dados</button>`;
+
+      return `<div class="search-result-item ${isInside ? 'inside-badge ja-dentro' : ''}" onclick="${isInside ? `mostrarAvisoDentro('${(r.nome||'').replace(/'/g,"\\'")}')` : `preencherFormulario(${JSON.stringify(r).replace(/"/g, '&quot;')})`}">
+        <div style="flex:1">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
             <span class="search-result-name">${r.nome || '—'}</span>
             <span class="search-result-badge">${tipoLabel}</span>
-            ${isInside ? '<span style="font-size:10px;font-weight:700;color:var(--success);background:rgba(34,197,94,.1);padding:2px 8px;border-radius:12px;border:1px solid rgba(34,197,94,.3)">● DENTRO</span>' : ''}
+            ${isInside ? '<span style="font-size:10px;font-weight:700;color:var(--danger);background:rgba(239,68,68,.12);padding:2px 9px;border-radius:12px;border:1px solid rgba(239,68,68,.4)">🔴 DENTRO</span>' : ''}
           </div>
           <div class="search-result-meta">
             ${r.empresa ? `<span>Empresa: <strong>${r.empresa}</strong></span>` : ''}
@@ -741,9 +791,10 @@ async function executarBusca(query) {
             ${r.placa ? `<span>Placa: <strong>${r.placa}</strong></span>` : ''}
             <span>Última entrada: <strong>${entradaFmt}</strong></span>
           </div>
+          ${alertaBanner}
         </div>
-        <div class="search-result-actions">
-          <button class="btn-primary" style="font-size:12px;padding:7px 14px;" onclick="event.stopPropagation();preencherFormulario(${JSON.stringify(r).replace(/"/g, '&quot;')})">↙ Usar dados</button>
+        <div class="search-result-actions" style="flex-shrink:0">
+          ${actionBtn}
         </div>
       </div>`;
     }).join('');
@@ -804,6 +855,14 @@ function clearQuickSearch() {
   const box = document.getElementById('quick-search-results');
   box.classList.remove('visible');
   box.innerHTML = '';
+}
+
+function mostrarAvisoDentro(nome) {
+  const t = document.getElementById('toast');
+  t.textContent = '🚨 ' + (nome || 'Esta pessoa') + ' ainda está NO INTERIOR! Registre a saída antes de nova entrada.';
+  t.className = 'toast error';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4500);
 }
 
 // ═══════════════════════════════════════════════════════════════════
