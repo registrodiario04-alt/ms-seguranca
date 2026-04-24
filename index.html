@@ -161,6 +161,34 @@
   .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
 
+  /* ── BUSCA RÁPIDA NA TELA INICIAL ── */
+  .search-panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 26px;margin-bottom:22px;position:relative;overflow:hidden}
+  .search-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#7eaaff,var(--accent))}
+  .search-panel-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .search-input-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .search-type-btns{display:flex;gap:0;border-radius:6px;overflow:hidden;border:1px solid var(--border)}
+  .search-type-btn{background:var(--surface2);border:none;color:var(--muted);font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;padding:8px 14px;cursor:pointer;transition:all .2s;border-right:1px solid var(--border);letter-spacing:.5px}
+  .search-type-btn:last-child{border-right:none}
+  .search-type-btn.active{background:var(--accent);color:#fff}
+  .search-type-btn:hover:not(.active){background:var(--surface);color:var(--text)}
+  .search-input-wrap{position:relative;flex:1;min-width:220px}
+  .search-input-wrap input{width:100%;padding-left:36px;font-size:14px}
+  .search-input-wrap .search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
+  .search-results-box{margin-top:14px;display:none}
+  .search-results-box.visible{display:block}
+  .search-result-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;cursor:pointer;transition:all .2s;position:relative}
+  .search-result-item:hover{border-color:var(--accent);background:rgba(61,107,196,.07)}
+  .search-result-item.inside-badge::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:8px 0 0 8px;background:var(--accent)}
+  .search-result-meta{display:flex;gap:18px;font-size:12px;color:var(--muted);margin-top:4px;flex-wrap:wrap}
+  .search-result-meta span strong{color:var(--text)}
+  .search-result-name{font-size:15px;font-weight:600;color:var(--text)}
+  .search-result-actions{display:flex;gap:8px;flex-shrink:0}
+  .search-empty{text-align:center;padding:28px 16px;color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:8px}
+  .search-loading{text-align:center;padding:18px;color:var(--muted);font-size:13px}
+  .search-result-badge{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;background:rgba(61,107,196,.15);color:var(--accent);border:1px solid rgba(61,107,196,.3)}
+  .prefill-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--accent);color:#fff;font-weight:700;font-size:13px;padding:12px 22px;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:998;opacity:0;transition:all .3s;white-space:nowrap}
+  .prefill-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
   @media print{
     header,.history-toolbar,.export-toolbar,.print-bar .btn-primary,.btn-danger,.btn-success{display:none!important}
     body{background:#fff;color:#000}
@@ -197,6 +225,25 @@
   <!-- ═══ CADASTRO ═══ -->
   <div class="view active" id="view-cadastro">
     <div id="conn-status" class="conn-bar offline">⚡ Conectando ao banco de dados...</div>
+
+    <!-- PAINEL DE BUSCA RÁPIDA -->
+    <div class="search-panel">
+      <div class="search-panel-title">🔎 Busca Rápida de Cadastro</div>
+      <div class="search-input-row">
+        <div class="search-type-btns">
+          <button class="search-type-btn active" onclick="setSearchType('nome',this)">Nome</button>
+          <button class="search-type-btn" onclick="setSearchType('cpf',this)">CPF</button>
+          <button class="search-type-btn" onclick="setSearchType('rg',this)">RG / Doc</button>
+        </div>
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="quick-search-input" placeholder="Digite para buscar cadastros anteriores..." oninput="onQuickSearch(this.value)" autocomplete="off">
+        </div>
+        <button class="btn-outline" onclick="clearQuickSearch()" style="padding:8px 14px;font-size:12px;">✕ Limpar</button>
+      </div>
+      <div class="search-results-box" id="quick-search-results"></div>
+    </div>
+
     <div class="form-card">
       <div class="form-title">✦ Novo Registro de Entrada</div>
       <div class="sub-tabs">
@@ -430,8 +477,162 @@
 </main>
 
 <div class="toast" id="toast"></div>
+<div class="prefill-toast" id="prefill-toast"></div>
 
 <script>
+// ═══════════════════════════════════════════════════════════════════
+// BUSCA RÁPIDA — pesquisa por Nome, CPF ou RG no histórico
+// ═══════════════════════════════════════════════════════════════════
+let searchType = 'nome';
+let searchTimeout = null;
+
+function setSearchType(type, btn) {
+  searchType = type;
+  document.querySelectorAll('.search-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const input = document.getElementById('quick-search-input');
+  const placeholders = { nome: 'Digite o nome para buscar...', cpf: 'Digite o CPF (ex: 123.456.789-00)...', rg: 'Digite o RG ou documento...' };
+  input.placeholder = placeholders[type];
+  if (input.value.trim().length >= 2) onQuickSearch(input.value);
+}
+
+function onQuickSearch(val) {
+  clearTimeout(searchTimeout);
+  const box = document.getElementById('quick-search-results');
+  if (val.trim().length < 2) {
+    box.classList.remove('visible');
+    box.innerHTML = '';
+    return;
+  }
+  box.classList.add('visible');
+  box.innerHTML = '<div class="search-loading">⏳ Buscando...</div>';
+  searchTimeout = setTimeout(() => executarBusca(val.trim()), 350);
+}
+
+async function executarBusca(query) {
+  const box = document.getElementById('quick-search-results');
+  if (!firestoreOk) {
+    box.innerHTML = '<div class="search-empty">⚠️ Banco de dados não conectado. Verifique a configuração do Firebase.</div>';
+    return;
+  }
+  try {
+    const snap = await db.collection('registros').orderBy('entrada', 'desc').limit(500).get();
+    const q = query.toLowerCase().replace(/[.\-\/\s]/g, '');
+    const resultados = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      let match = false;
+      if (searchType === 'nome') {
+        match = (d.nome || '').toLowerCase().includes(query.toLowerCase());
+      } else if (searchType === 'cpf') {
+        const cpfClean = (d.cpf || '').replace(/[.\-\s]/g, '');
+        match = cpfClean.includes(q);
+      } else if (searchType === 'rg') {
+        const docClean = (d.doc || '').replace(/[.\-\/\s]/g, '').toLowerCase();
+        match = docClean.includes(q);
+      }
+      if (match) resultados.push({ id: doc.id, ...d });
+    });
+
+    if (resultados.length === 0) {
+      box.innerHTML = '<div class="search-empty">🔍 Nenhum cadastro encontrado para <strong>"' + query + '"</strong></div>';
+      return;
+    }
+
+    const uniqueMap = new Map();
+    resultados.forEach(r => {
+      const key = (r.cpf || r.doc || r.nome || '').toLowerCase();
+      if (!uniqueMap.has(key) || new Date(r.entrada) > new Date(uniqueMap.get(key).entrada)) {
+        uniqueMap.set(key, r);
+      }
+    });
+    const unique = [...uniqueMap.values()].slice(0, 10);
+
+    box.innerHTML = '<div style="font-size:11px;color:var(--muted);margin-bottom:10px;letter-spacing:.5px;text-transform:uppercase;">'
+      + unique.length + ' cadastro(s) encontrado(s) — clique para pré-preencher o formulário</div>'
+      + unique.map(r => {
+      const isInside = !r.saida;
+      const tipoLabel = { veiculo: '🚗 Veículo', colaborador: '👷 Colaborador', pedestre: '🚶 Pedestre' }[r.tipo] || r.tipo;
+      const entradaFmt = r.entrada ? new Date(r.entrada).toLocaleDateString('pt-BR') : '—';
+      return `<div class="search-result-item ${isInside ? 'inside-badge' : ''}" onclick="preencherFormulario(${JSON.stringify(r).replace(/"/g, '&quot;')})">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span class="search-result-name">${r.nome || '—'}</span>
+            <span class="search-result-badge">${tipoLabel}</span>
+            ${isInside ? '<span style="font-size:10px;font-weight:700;color:var(--success);background:rgba(34,197,94,.1);padding:2px 8px;border-radius:12px;border:1px solid rgba(34,197,94,.3)">● DENTRO</span>' : ''}
+          </div>
+          <div class="search-result-meta">
+            ${r.empresa ? `<span>Empresa: <strong>${r.empresa}</strong></span>` : ''}
+            ${r.cpf ? `<span>CPF: <strong>${r.cpf}</strong></span>` : ''}
+            ${r.doc ? `<span>Doc: <strong>${r.doc}</strong></span>` : ''}
+            ${r.placa ? `<span>Placa: <strong>${r.placa}</strong></span>` : ''}
+            <span>Última entrada: <strong>${entradaFmt}</strong></span>
+          </div>
+        </div>
+        <div class="search-result-actions">
+          <button class="btn-primary" style="font-size:12px;padding:7px 14px;" onclick="event.stopPropagation();preencherFormulario(${JSON.stringify(r).replace(/"/g, '&quot;')})">↙ Usar dados</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    box.innerHTML = '<div class="search-empty">⚠️ Erro ao buscar: ' + e.message + '</div>';
+  }
+}
+
+function preencherFormulario(dados) {
+  // Seleciona a aba correta
+  const tipo = dados.tipo || 'pedestre';
+  const tabMap = { veiculo: 0, colaborador: 1, pedestre: 2 };
+  const tabs = document.querySelectorAll('.sub-tab');
+  if (tabs[tabMap[tipo]]) {
+    tabs[tabMap[tipo]].click();
+  }
+
+  // Preenche os campos após um pequeno delay (para a aba abrir)
+  setTimeout(() => {
+    const prefix = tipo === 'veiculo' ? 'v' : tipo === 'colaborador' ? 'c' : 'p';
+    const fields = {
+      nome: dados.nome || '',
+      cpf: dados.cpf || '',
+      doc: dados.doc || '',
+      telefone: dados.telefone || '',
+      empresa: dados.empresa || '',
+      motivo: dados.motivo || '',
+      setor: dados.setor || '',
+    };
+    if (tipo === 'veiculo') {
+      fields.placa = dados.placa || '';
+      fields.modelo = dados.modelo || '';
+      fields.cor = dados.cor || '';
+    }
+    if (tipo === 'colaborador') {
+      fields.cargo = dados.cargo || '';
+      fields.matricula = dados.matricula || '';
+      fields.placa = dados.placa || '';
+    }
+    Object.keys(fields).forEach(field => {
+      const el = document.getElementById(prefix + '-' + field);
+      if (el && fields[field]) el.value = fields[field];
+    });
+
+    // Toast de confirmação
+    const t = document.getElementById('prefill-toast');
+    t.textContent = '✅ Dados de ' + (dados.nome || 'cadastro') + ' pré-preenchidos!';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+
+    // Fecha a busca
+    clearQuickSearch();
+  }, 150);
+}
+
+function clearQuickSearch() {
+  document.getElementById('quick-search-input').value = '';
+  const box = document.getElementById('quick-search-results');
+  box.classList.remove('visible');
+  box.innerHTML = '';
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // FIREBASE — inicialização
 // ═══════════════════════════════════════════════════════════════════
