@@ -869,6 +869,7 @@ function mostrarAvisoDentro(nome) {
 // FIREBASE — inicialização
 // ═══════════════════════════════════════════════════════════════════
 let db, firestoreOk = false;
+let usarLocalStorage = false;
 
 const firebaseConfig = {
   apiKey: "AIzaSyCpLh2G4eyn4HH19MjSprJf5_XyJcQ3Zuk",
@@ -903,8 +904,6 @@ try {
   setConnStatus('error','⚠️ Firebase não configurado — usando armazenamento local');
   usarLocalStorage = true;
 }
-
-let usarLocalStorage = false;
 
 function setConnStatus(cls, msg) {
   const el = document.getElementById('conn-status');
